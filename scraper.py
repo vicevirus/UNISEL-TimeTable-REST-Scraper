@@ -1,21 +1,25 @@
-
-import sys
 import re
 import json
 import requests
+import sys
+import json
 from bs4 import BeautifulSoup
 
-if len(sys.argv) < 3:
-    print("Usage: script.py --semester <semester_number>")
+if len(sys.argv) < 5:
+    print("Usage: script.py --semester <semester_number> --campus <campus_code>")
     sys.exit(1)
 
-if sys.argv[1] == "--semester" and sys.argv[2].isnumeric():
+if sys.argv[1] == "--semester" and sys.argv[2].isnumeric() and sys.argv[3] == "--campus":
     semester = int(sys.argv[2])
+    campus = sys.argv[4]
 else:
-    print("Please enter a correct semester")
+    print("Please enter a correct semester and campus code")
     sys.exit(1)
 
 def fetch_data(campus, semester):
+    if (campus == "F"):
+        campus = "BJ"
+        
     subjectPage = requests.get(f"http://etimetable.unisel.edu.my/{campus}{semester}/{campus}{semester}_subjects_days_vertical.html")
     teachersPage = requests.get(f"http://etimetable.unisel.edu.my/{campus}{semester}/{campus}{semester}_teachers_days_vertical.html")
 
@@ -42,7 +46,10 @@ def fetch_data(campus, semester):
         if (campus == "SA"):
             days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
             return days[index % 7]
-        else:
+        elif (campus == "BJ"):
+            days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
+            return days[index % 5]
+        elif (campus == "F"):
             days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
             return days[index % 5]
 
@@ -66,7 +73,9 @@ def fetch_data(campus, semester):
 
         if (campus == "SA"):
             subject_id = idx // 7
-        else: 
+        elif (campus == "BJ"): 
+            subject_id = idx // 5
+        elif (campus == "F"):
             subject_id = idx // 5
 
         if subject_id not in subjects_time_data:
@@ -80,11 +89,8 @@ def fetch_data(campus, semester):
         "subjects": subjects_data,
         "subjectsTime": subjects_time_data
     }
+    
+campus_data = fetch_data(campus, semester)
 
-campus_data = {}
-
-for campus in ["SA", "BJ"]:
-    campus_data[campus] = fetch_data(campus, semester)
-
-with open(f"timetable_data_{semester}.json", "w") as outfile:
+with open(f"timetable_data_{semester}_{campus}.json", "w") as outfile:
     json.dump(campus_data, outfile, indent=2)
