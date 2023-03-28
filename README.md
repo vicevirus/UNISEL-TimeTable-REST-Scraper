@@ -14,4 +14,6 @@ This API requires the following packages to be installed:
 - `uvicorn`
 
 These can be installed by running the following command:
-
+```
+pip install cachetools bs4 fastapi requests uvicorn
+```
