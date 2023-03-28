@@ -1,8 +1,17 @@
 # UNISEL-TimeTable-FastAPI-Scraper
 
 
-A REST API scraping data from UNISEL Time Table Website.
+This API provides timetable data for different campuses and semesters. The data is scraped from the [Universiti Selangor (UNISEL) e-timetable website](http://etimetable.unisel.edu.my) using a web scraper.
 
-REST API : FastAPI
-<br/>
-Scraping : BS4, Vanilla Python
+## Requirements
+
+This API requires the following packages to be installed:
+
+- `cachetools`
+- `bs4`
+- `fastapi`
+- `requests`
+- `uvicorn`
+
+These can be installed by running the following command:
+
