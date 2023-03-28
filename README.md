@@ -3,6 +3,8 @@
 
 This API provides timetable data for different campuses and semesters. The data is scraped from the [Universiti Selangor (UNISEL) e-timetable website](http://etimetable.unisel.edu.my) using a web scraper.
 
+API Available Here : https://uniseltimetableapi.duckdns.org:8000
+
 ## Requirements
 
 This API requires the following packages to be installed:
