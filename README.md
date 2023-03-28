@@ -48,3 +48,4 @@ Returns the latest semester codes for each campus.
 ##### Response
 
 Returns a JSON object with the latest semester codes for each campus (`SA`, `BJ`, and `F`).
+Returns a JSON object with the latest semester codes for each campus (`SA`, `BJ`, and `F`).
