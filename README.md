@@ -1,53 +1,46 @@
-# UNISEL-TimeTable-FastAPI-Scraper
+# UNISEL Timetable API
 
+This is an API that provides timetable data for students of Universiti Selangor (UNISEL). The API uses FastAPI framework and Redis for caching. The API also scrapes the university's website to get the latest semester codes and timetable data.
 
-This API provides timetable data for different campuses and semesters. The data is scraped from the [Universiti Selangor (UNISEL) e-timetable website](http://etimetable.unisel.edu.my) using a web scraper.
+## Endpoints
 
-API Available Here : https://uniseltimetableapi.duckdns.org:8000
+### `GET /`
 
-## Requirements
+This endpoint returns a welcome message and a link to the Github page of the project.
 
-This API requires the following packages to be installed:
+### `GET /timetable_data/{campus}/{semester}`
 
-- `cachetools`
-- `bs4`
-- `fastapi`
+This endpoint takes two parameters:
+
+- `campus`: The campus code. It can be `SA` for Shah Alam, `BJ` for Bestari Jaya, or `F` for Flexi mode.
+- `semester`: The semester code. It should be a 5-digit integer.
+
+The endpoint returns the timetable data for the specified campus and semester. If the data is not available in the Redis cache, the API scrapes the university's website and updates the Redis cache with the latest data.
+
+### `GET /latest_semester_codes`
+
+This endpoint returns the latest semester codes for each campus. The data is scraped from the university's website.
+
+## Dependencies
+
+The API uses the following Python libraries:
+
+- `os`
+- `re`
+- `subprocess`
+- `json`
+- `time`
 - `requests`
+- `BeautifulSoup`
+- `fastapi`
+- `redis`
 - `uvicorn`
 
-These can be installed by running the following command:
+## Running the API
+
+To run the API, use the following command:
 ```
-pip install cachetools bs4 fastapi requests uvicorn
+python3 api.py
 ```
 
-## Usage
-
-To start the API server, run the following command:
-```
-python api.py
-```
-By default, the server will listen on `http://localhost:8000`. You can change the host and port by passing the `--host` and `--port` arguments to the `uvicorn.run` method in `app.py`.
-
-### Endpoints
-
-#### `GET /timetable_data/{campus}/{semester}`
-
-Returns the timetable data for the specified campus and semester.
-
-##### Parameters
-
-- `campus` (string, required): The campus code (`SA`, `BJ`, or `F`).
-- `semester` (string, required): The semester code (5 digits, e.g. `20182`).
-
-##### Response
-
-Returns a JSON object with the timetable data.
-
-#### `GET /latest_semester_codes`
-
-Returns the latest semester codes for each campus.
-
-##### Response
-
-Returns a JSON object with the latest semester codes for each campus (`SA`, `BJ`, and `F`).
-Returns a JSON object with the latest semester codes for each campus (`SA`, `BJ`, and `F`).
+The API runs on `https://localhost:8000`.
