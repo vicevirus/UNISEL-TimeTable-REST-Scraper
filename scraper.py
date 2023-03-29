@@ -1,3 +1,4 @@
+
 import re
 import json
 import requests
@@ -53,42 +54,37 @@ def fetch_data(campus, semester):
             days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
             return days[index % 5]
 
-    subjects_time_data = {}
-    idx = 0
-    
-    for time in availSub:
-        time = time.text.strip('\n').strip()
-        time = re.split('\n', time)
-      
-        if any("Timetable generated with FET" in t for t in time):
-            continue
-        
-       
-        time.pop(0)
-        
-       
-     
-        
-        day = get_day_from_index(idx, campus)
+    subjects_time_data = []
+    subject_idx = 0
+    for subject in subjects_data:
+        subject_name = subject["subject"]
+        subject_timetable_data = {}
+        idx = 0
+        for time in availSub[subject_idx*6:subject_idx*6+6]:
+            time = time.text.strip('\n').strip()
+            time = re.split('\n', time)
 
-        if (campus == "SA"):
-            subject_id = idx // 7
-        elif (campus == "BJ"): 
-            subject_id = idx // 5
-        elif (campus == "F"):
-            subject_id = idx // 5
+            if any("Timetable generated with FET" in t for t in time):
+                continue
 
-        if subject_id not in subjects_time_data:
-            subjects_time_data[subject_id] = {}
+            time.pop(0)
 
-        subjects_time_data[subject_id][day] = time
-        idx += 1
+            day = get_day_from_index(idx, campus)
+
+            if subject_name not in subject_timetable_data:
+                subject_timetable_data['subjectName'] = subject_name
+
+            subject_timetable_data[day] = time
+            idx += 1
+        subjects_time_data.append(subject_timetable_data)
+        subject_idx += 1
 
     return {
         "lecturers": lecturers_data,
         "subjects": subjects_data,
         "subjectsTime": subjects_time_data
     }
+
     
 campus_data = fetch_data(campus, semester)
 
