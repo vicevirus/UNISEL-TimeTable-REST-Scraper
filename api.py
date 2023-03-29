@@ -1,4 +1,3 @@
-
 import os
 from cachetools import TTLCache
 from bs4 import BeautifulSoup
@@ -9,7 +8,6 @@ import requests
 import subprocess
 import json
 from fastapi import FastAPI, Path, HTTPException
-
 
 app = FastAPI()
 
@@ -24,6 +22,13 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+async def root():
+	return {"message": "Welcome to UNISEL Timetable API.",
+		"message2": "Dont know to navigate?",
+		"message3": "Take a look at the github link",
+		"link": "https://bit.ly/42LM7Ki"		}
+
 def validate_semester(semester: str):
     if not re.match(r'^\d{5}$', semester):
         raise HTTPException(
@@ -31,7 +36,16 @@ def validate_semester(semester: str):
     return int(semester)
 
 
-cache = TTLCache(maxsize=1000, ttl=300)
+cache = TTLCache(maxsize=1000, ttl=100)
+
+
+def validate_semester(semester: str):
+    if not re.match(r'^\d{5}$', semester):
+        raise HTTPException(
+            status_code=500, detail=f"Semester code should have 5 digits")
+    return int(semester)
+
+
 
 
 def get_timetable_data(campus: str, semester: int):
@@ -70,8 +84,7 @@ async def read_timetable_data(campus: str, semester: str):
 
     return timetable_data
 
-cache = TTLCache(maxsize=1, ttl=3600)
-
+cache = TTLCache(maxsize=10, ttl=60)
 
 @app.get("/latest_semester_codes")
 async def get_latest_semester_codes():
@@ -121,6 +134,10 @@ async def get_latest_semester_codes():
 
     return latest_semester_codes
 
+
 if __name__ == "__main__":
+
+
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000, ssl_keyfile="privkey.pem",
+               ssl_certfile="cert.pem")
