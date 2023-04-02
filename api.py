@@ -1,8 +1,7 @@
-
 import os
 import re
 import subprocess
-import json
+import ujson as json
 import time
 import requests
 from bs4 import BeautifulSoup
@@ -127,7 +126,6 @@ async def get_latest_semester_codes():
 
 if __name__ == "__main__":
 
-
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, ssl_keyfile="privkey.pem",
-               ssl_certfile="cert.pem")
+               ssl_certfile="cert.pem", workers=5)

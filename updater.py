@@ -1,6 +1,6 @@
 import os
 import requests
-import json
+import ujson as json
 import time
 
 #Verify false, only for local environment, turning off warning
@@ -25,7 +25,7 @@ def update_timetable(campus, semester_code):
     if response.status_code != 200:
         raise Exception("Failed to update timetable")
     timetable_data = response.json()
-    with open(f"timetable_data_{semester_code}_{campus}.json", "w") as f:
+    with open(f"/root/UNISEL-TimeTable-REST-Scraper/timetable_data_{semester_code}_{campus}.json", "w") as f:
         json.dump(timetable_data, f)
     print(f"Timetable updated for semester code {semester_code} ({campus})")
 

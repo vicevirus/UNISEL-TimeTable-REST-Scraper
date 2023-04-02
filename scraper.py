@@ -1,9 +1,8 @@
-
 import re
 import json
 import requests
 import sys
-import json
+import ujson as json
 from bs4 import BeautifulSoup
 
 if len(sys.argv) < 5:
@@ -88,5 +87,5 @@ def fetch_data(campus, semester):
     
 campus_data = fetch_data(campus, semester)
 
-with open(f"timetable_data_{semester}_{campus}.json", "w") as outfile:
+with open(f"/root/UNISEL-TimeTable-REST-Scraper/timetable_data_{semester}_{campus}.json", "w") as outfile:
     json.dump(campus_data, outfile, indent=2)
