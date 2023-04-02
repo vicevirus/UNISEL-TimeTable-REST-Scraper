@@ -28,7 +28,7 @@ The API uses the following Python libraries:
 - `os`
 - `re`
 - `subprocess`
-- `json`
+- `ujson`
 - `time`
 - `requests`
 - `BeautifulSoup`
