@@ -25,6 +25,10 @@ This endpoint returns the latest semester codes for each campus. The data is scr
 
 The API uses the following Python libraries:
 
+- `aiofiles`
+- `asyncio`
+- `httpx`
+- `orjson`
 - `os`
 - `re`
 - `subprocess`
