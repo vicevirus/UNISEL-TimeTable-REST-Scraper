@@ -1,13 +1,15 @@
 import os
 import re
+import asyncio
 import subprocess
-import ujson as json
+import orjson as json
 import time
-import requests
+import httpx
 from bs4 import BeautifulSoup
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Path, HTTPException
-import redis
+import aiofiles
+import redis.asyncio as redis
 
 app = FastAPI()
 
@@ -21,7 +23,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-redis_conn = redis.Redis(host='localhost', port=6379, db=0)
+redis_conn = None
+httpx_client = httpx.AsyncClient()
+
+@app.on_event("startup")
+async def startup_event():
+    global redis_conn
+    redis_conn = redis.Redis(host='localhost', port=6379, db=0)
+
+
 
 @app.get("/")
 async def root():
@@ -37,9 +47,11 @@ def validate_semester(semester: str):
     return int(semester)
 
 
-def get_timetable_data(campus: str, semester: int):
+
+async def get_timetable_data(campus: str, semester: int):
     file_name = f"timetable_data_{semester}_{campus}.json"
-    timetable_data = redis_conn.get(file_name)
+    timetable_data = await redis_conn.get(file_name)
+
 
     if timetable_data is not None:
         # Return cached data
@@ -54,14 +66,14 @@ def get_timetable_data(campus: str, semester: int):
             raise HTTPException(
                 status_code=500, detail=f"Error occurred while updating timetable: {result.stderr}")
 
-        time.sleep(10)
+        await asyncio.sleep(10)
 
     # Load timetable data from file
-    with open(file_name, "r") as file:
-        timetable_data = json.load(file)
+    async with aiofiles.open(file_name, "r") as file:
+        timetable_data = json.loads(await file.read())
 
     # Cache the timetable data in Redis for 6 hours
-    redis_conn.setex(file_name, 21600, json.dumps(timetable_data))
+    await redis_conn.setex(file_name, 21600, json.dumps(timetable_data))
 
     return timetable_data
 
@@ -69,7 +81,7 @@ def get_timetable_data(campus: str, semester: int):
 @app.get("/timetable_data/{campus}/{semester}")
 async def read_timetable_data(campus: str, semester: str):
     semester = validate_semester(semester)
-    timetable_data = get_timetable_data(campus, semester)
+    timetable_data = await get_timetable_data(campus, semester)
 
     return timetable_data
 
@@ -77,14 +89,18 @@ async def read_timetable_data(campus: str, semester: str):
 @app.get("/latest_semester_codes")
 async def get_latest_semester_codes():
     # Check if semester codes are already cached
-    latest_semester_codes = redis_conn.get("latest_semester_codes")
+    latest_semester_codes = await redis_conn.get("latest_semester_codes")
 
     if latest_semester_codes is not None:
         return json.loads(latest_semester_codes)
 
     # If not, scrape the website to get the latest semester codes
     url = "http://etimetable.unisel.edu.my"
-    response = requests.get(url)
+    
+    
+    client = httpx_client
+    response = await client.get(url)
+        
     soup = BeautifulSoup(response.content, 'html.parser')
 
     # Find all anchor tags with the semester code
@@ -120,12 +136,12 @@ async def get_latest_semester_codes():
     }
 
     # Cache the semester codes in Redis for future requests
-    redis_conn.setex("latest_semester_codes", 60, json.dumps(latest_semester_codes))
+    await redis_conn.setex("latest_semester_codes", 60, json.dumps(latest_semester_codes))
 
     return latest_semester_codes
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, ssl_keyfile="privkey.pem",
-               ssl_certfile="cert.pem", workers=5)
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000, ssl_keyfile="privkey.pem",
+#                ssl_certfile="cert.pem")
