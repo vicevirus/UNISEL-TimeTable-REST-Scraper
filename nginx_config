@@ -1,7 +1,7 @@
 upstream backend {
     least_conn;
     server unix:/var/run/fastapi.sock;
-    server 158.101.46.96:5000;
+
 }
 proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m inactive=60s;
 
@@ -28,9 +28,14 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Connection "upgrade";
         proxy_set_header Upgrade $http_upgrade;
+
+        add_header 'Access-Control-Allow-Origin' '*';
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+        add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
     }
 
-    location ^~ /timetable_data {
+    location ~* ^/timetable_data/[^/]+/[^/]+$ {
         proxy_pass http://backend; # Replace with your FastAPI app's port
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -38,12 +43,46 @@ server {
         proxy_set_header Connection "upgrade";
         proxy_set_header Upgrade $http_upgrade;
 
-        # Cache configuration
+        
         proxy_cache my_cache;
-        proxy_cache_valid 200 60s; # Cache 200 responses for 1 minute
+        proxy_cache_valid 200 1m; # Cache duration set to 1 minute
         proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
         proxy_cache_background_update on;
         proxy_cache_lock on;
-        add_header X-Proxy-Cache $upstream_cache_status;
+        add_header X-Cache-Status $upstream_cache_status;
+
+        expires 1m; # Cache duration set to 1 minute
+
+        proxy_hide_header 'Access-Control-Allow-Origin';
+        add_header 'Access-Control-Allow-Origin' '*' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' always;
+        add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range' always;
     }
+
+    location = /latest_semester_codes {
+        proxy_pass http://backend; # Replace with your FastAPI app's port
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Upgrade $http_upgrade;
+        
+        
+        proxy_cache my_cache;
+        proxy_cache_valid 200 10s; # Cache duration set to 10 seconds
+        proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+        proxy_cache_background_update on;
+        proxy_cache_lock on;
+        add_header X-Cache-Status $upstream_cache_status;
+
+        expires 10s; # Cache duration set to 10 seconds
+
+        proxy_hide_header 'Access-Control-Allow-Origin';
+        add_header 'Access-Control-Allow-Origin' '*' always;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
+        add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' always;
+        add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range' always;
+    }
+
 }
