@@ -52,14 +52,15 @@ def fetch_data(campus, semester):
         elif (campus == "F"):
             days = ["monday", "tuesday", "wednesday", "thursday", "friday"]
             return days[index % 5]
-
+        
+    num_rows = 8 if campus == "SA" else 6
     subjects_time_data = []
     subject_idx = 0
     for subject in subjects_data:
         subject_name = subject["subject"]
         subject_timetable_data = {}
         idx = 0
-        for time in availSub[subject_idx*6:subject_idx*6+6]:
+        for time in availSub[subject_idx*num_rows:subject_idx*num_rows+num_rows]:
             time = time.text.strip('\n').strip()
             time = re.split('\n', time)
 
@@ -87,5 +88,5 @@ def fetch_data(campus, semester):
     
 campus_data = fetch_data(campus, semester)
 
-with open(f"/root/UNISEL-TimeTable-REST-Scraper/timetable_data_{semester}_{campus}.json", "w") as outfile:
+with open(f"timetable_data_{semester}_{campus}.json", "w") as outfile:
     json.dump(campus_data, outfile, indent=2)
