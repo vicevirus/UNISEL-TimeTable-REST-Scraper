@@ -2,6 +2,12 @@
 
 This is an API that provides timetable data for students of Universiti Selangor (UNISEL). The API uses FastAPI framework and Redis for caching. The API also scrapes the university's website to get the latest semester codes and timetable data.
 
+## The API is available here (for now) : https://uniseltimetableapi.zapto.org
+
+### Technologies used behind the server as of now (6 Apr 23)
+- Tuned nginx with caching and load balancing (2 slave server 1 master)
+- Redis cache server
+
 ## Endpoints
 
 ### `GET /`
