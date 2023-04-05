@@ -73,7 +73,7 @@ async def get_timetable_data(campus: str, semester: int):
         timetable_data = json.loads(await file.read())
 
     # Cache the timetable data in Redis for 6 hours
-    await redis_conn.setex(file_name, 21600, json.dumps(timetable_data))
+    await redis_conn.setex(file_name, 600, json.dumps(timetable_data))
 
     return timetable_data
 
